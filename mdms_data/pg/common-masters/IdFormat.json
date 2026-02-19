@@ -1,0 +1,7 @@
+{
+  "tenantId": "pg",
+  "moduleName": "common-masters",
+  "IdFormat": [
+    {"idname": "advocate.applicationnumber", "format": "ADV-[SEQ_EG_ADVOCATE_APPLICATION_NUM]"}
+  ]
+}

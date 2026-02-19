@@ -1,0 +1,190 @@
+serviceMaps:
+  serviceName: digit-assignment
+  mappings:
+    - version: 1.0
+      description: Persist advocate registration on create
+      fromTopic: save-advocate-application
+      isTransaction: true
+      queryMaps:
+        - query: >
+            INSERT INTO eg_advocate (id, tenantid, applicationnumber, barregistrationnumber,
+            advocatetype, organisationid, individualid, isactive, createdby, lastmodifiedby,
+            createdtime, lastmodifiedtime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          basePath: advocates.*
+          jsonMaps:
+            - jsonPath: $.advocates.*.id
+            - jsonPath: $.advocates.*.tenantId
+            - jsonPath: $.advocates.*.applicationNumber
+            - jsonPath: $.advocates.*.barRegistrationNumber
+            - jsonPath: $.advocates.*.advocateType
+            - jsonPath: $.advocates.*.organisationID
+            - jsonPath: $.advocates.*.individualId
+            - jsonPath: $.advocates.*.isActive
+            - jsonPath: $.advocates.*.auditDetails.createdBy
+            - jsonPath: $.advocates.*.auditDetails.lastModifiedBy
+            - jsonPath: $.advocates.*.auditDetails.createdTime
+            - jsonPath: $.advocates.*.auditDetails.lastModifiedTime
+
+    - version: 1.0
+      description: Update advocate registration
+      fromTopic: update-advocate-application
+      isTransaction: true
+      queryMaps:
+        - query: >
+            UPDATE eg_advocate SET barregistrationnumber = ?, advocatetype = ?,
+            organisationid = ?, individualid = ?, isactive = ?,
+            lastmodifiedby = ?, lastmodifiedtime = ?
+            WHERE id = ?
+          basePath: advocates.*
+          jsonMaps:
+            - jsonPath: $.advocates.*.barRegistrationNumber
+            - jsonPath: $.advocates.*.advocateType
+            - jsonPath: $.advocates.*.organisationID
+            - jsonPath: $.advocates.*.individualId
+            - jsonPath: $.advocates.*.isActive
+            - jsonPath: $.advocates.*.auditDetails.lastModifiedBy
+            - jsonPath: $.advocates.*.auditDetails.lastModifiedTime
+            - jsonPath: $.advocates.*.id
+
+    # Workflow v2 business service (required for advocate create to find ADVOCATE_REGISTRATION)
+    - version: 1.0
+      description: Persists workflow BusinessService so _search can find it
+      fromTopic: save-wf-businessservice
+      isTransaction: true
+      queryMaps:
+        - query: >
+            INSERT INTO eg_wf_businessservice_v2(businessServiceSla, businessservice, business, tenantid, uuid, geturi, posturi, createdby, createdtime, lastmodifiedby, lastmodifiedtime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (tenantid, businessservice) DO UPDATE SET
+            businessservicesla = EXCLUDED.businessservicesla,
+            business = EXCLUDED.business,
+            geturi = EXCLUDED.geturi,
+            posturi = EXCLUDED.posturi,
+            lastmodifiedby = EXCLUDED.lastmodifiedby,
+            lastmodifiedtime = EXCLUDED.lastmodifiedtime
+          basePath: BusinessServices.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.businessServiceSla
+            - jsonPath: $.BusinessServices.*.businessService
+            - jsonPath: $.BusinessServices.*.business
+            - jsonPath: $.BusinessServices.*.tenantId
+            - jsonPath: $.BusinessServices.*.uuid
+            - jsonPath: $.BusinessServices.*.getUri
+            - jsonPath: $.BusinessServices.*.postUri
+            - jsonPath: $.BusinessServices.*.auditDetails.createdBy
+            - jsonPath: $.BusinessServices.*.auditDetails.createdTime
+            - jsonPath: $.BusinessServices.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.auditDetails.lastModifiedTime
+
+        - query: >
+            INSERT INTO eg_wf_state_v2(seq, uuid, tenantid, businessserviceid, state, applicationStatus, sla, docuploadrequired, isstartstate, isterminatestate, isStateUpdatable, createdby, createdtime, lastmodifiedby, lastmodifiedtime)
+            VALUES (nextval('seq_eg_wf_state_v2'), ?, ?, (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (state, businessserviceid) DO NOTHING
+          basePath: BusinessServices.*.states.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.states.*.uuid
+            - jsonPath: $.BusinessServices.*.states.*.tenantId
+            - jsonPath: $.BusinessServices[*][?({uuid} in @.states[*].uuid)].tenantId
+            - jsonPath: $.BusinessServices[*][?({uuid} in @.states[*].uuid)].businessService
+            - jsonPath: $.BusinessServices.*.states.*.state
+            - jsonPath: $.BusinessServices.*.states.*.applicationStatus
+            - jsonPath: $.BusinessServices.*.states.*.sla
+            - jsonPath: $.BusinessServices.*.states.*.docUploadRequired
+            - jsonPath: $.BusinessServices.*.states.*.isStartState
+            - jsonPath: $.BusinessServices.*.states.*.isTerminateState
+            - jsonPath: $.BusinessServices.*.states.*.isStateUpdatable
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.createdBy
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.createdTime
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.lastModifiedTime
+
+        - query: >
+            INSERT INTO eg_wf_action_v2(uuid, tenantId, active, currentState, action, nextstate, roles, createdby, createdtime, lastmodifiedby, lastmodifiedtime)
+            VALUES (?, ?, ?, (SELECT uuid FROM eg_wf_state_v2 WHERE businessserviceid = (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1) AND state = ? LIMIT 1), ?, (SELECT uuid FROM eg_wf_state_v2 WHERE businessserviceid = (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1) AND state = ? LIMIT 1), ?, ?, ?, ?, ?)
+          basePath: BusinessServices.*.states.*.actions.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.uuid
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.tenantId
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.active
+            - jsonPath: $.BusinessServices[0].tenantId
+            - jsonPath: $.BusinessServices[0].businessService
+            - jsonPath: $.BusinessServices[*].states[*][?({uuid} in @.actions[*].uuid)].state
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.action
+            - jsonPath: $.BusinessServices[0].tenantId
+            - jsonPath: $.BusinessServices[0].businessService
+            - jsonPath: $.BusinessServices[*].states[*][?(@.uuid == {nextState})].state
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.roles
+              type: ARRAY
+              dbType: STRING
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.createdBy
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.createdTime
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedTime
+
+    # Workflow v2 business service UPDATE (so _update actually persists to DB; e.g. SUBMIT roles including CITIZEN)
+    - version: 1.0
+      description: Updates workflow BusinessService/state/action in DB when _update is called
+      fromTopic: update-wf-businessservice
+      isTransaction: true
+      queryMaps:
+        - query: >
+            UPDATE eg_wf_businessservice_v2
+            SET businessservicesla=?, businessservice=?, business=?, geturi=?, posturi=?, lastmodifiedby=?, lastmodifiedtime=?
+            WHERE uuid=?
+          basePath: BusinessServices.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.businessServiceSla
+            - jsonPath: $.BusinessServices.*.businessService
+            - jsonPath: $.BusinessServices.*.business
+            - jsonPath: $.BusinessServices.*.getUri
+            - jsonPath: $.BusinessServices.*.postUri
+            - jsonPath: $.BusinessServices.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.auditDetails.lastModifiedTime
+            - jsonPath: $.BusinessServices.*.uuid
+
+        - query: >
+            INSERT INTO eg_wf_state_v2(seq, uuid, tenantid, businessserviceid, state, applicationStatus, sla, docuploadrequired, isstartstate, isterminatestate, isStateUpdatable, createdby, createdtime, lastmodifiedby, lastmodifiedtime)
+            VALUES (nextval('seq_eg_wf_state_v2'), ?, ?, (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (state, businessserviceid) DO UPDATE SET sla=EXCLUDED.sla, docuploadrequired=EXCLUDED.docuploadrequired, isstartstate=EXCLUDED.isstartstate, isterminatestate=EXCLUDED.isterminatestate, isStateUpdatable=EXCLUDED.isStateUpdatable, lastmodifiedby=EXCLUDED.lastmodifiedby, lastmodifiedtime=EXCLUDED.lastmodifiedtime
+          basePath: BusinessServices.*.states.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.states.*.uuid
+            - jsonPath: $.BusinessServices.*.states.*.tenantId
+            - jsonPath: $.BusinessServices[0].tenantId
+            - jsonPath: $.BusinessServices[0].businessService
+            - jsonPath: $.BusinessServices.*.states.*.state
+            - jsonPath: $.BusinessServices.*.states.*.applicationStatus
+            - jsonPath: $.BusinessServices.*.states.*.sla
+            - jsonPath: $.BusinessServices.*.states.*.docUploadRequired
+            - jsonPath: $.BusinessServices.*.states.*.isStartState
+            - jsonPath: $.BusinessServices.*.states.*.isTerminateState
+            - jsonPath: $.BusinessServices.*.states.*.isStateUpdatable
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.createdBy
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.createdTime
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.states.*.auditDetails.lastModifiedTime
+
+        - query: >
+            INSERT INTO eg_wf_action_v2(uuid, tenantId, active, currentState, action, nextstate, roles, createdby, createdtime, lastmodifiedby, lastmodifiedtime)
+            VALUES (?, ?, ?, (SELECT uuid FROM eg_wf_state_v2 WHERE businessserviceid = (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1) AND state = ? LIMIT 1), ?, (SELECT uuid FROM eg_wf_state_v2 WHERE businessserviceid = (SELECT uuid FROM eg_wf_businessservice_v2 WHERE tenantid = ? AND businessservice = ? LIMIT 1) AND state = ? LIMIT 1), ?, ?, ?, ?, ?)
+            ON CONFLICT (uuid) DO UPDATE SET action=EXCLUDED.action, nextstate=EXCLUDED.nextstate, roles=EXCLUDED.roles, lastmodifiedby=EXCLUDED.lastmodifiedby, lastmodifiedtime=EXCLUDED.lastmodifiedtime
+          basePath: BusinessServices.*.states.*.actions.*
+          jsonMaps:
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.uuid
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.tenantId
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.active
+            - jsonPath: $.BusinessServices[0].tenantId
+            - jsonPath: $.BusinessServices[0].businessService
+            - jsonPath: $.BusinessServices[*].states[*][?({uuid} in @.actions[*].uuid)].state
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.action
+            - jsonPath: $.BusinessServices[0].tenantId
+            - jsonPath: $.BusinessServices[0].businessService
+            - jsonPath: $.BusinessServices[*].states[*][?(@.uuid == {nextState})].state
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.roles
+              type: ARRAY
+              dbType: STRING
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.createdBy
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.createdTime
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedBy
+            - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedTime

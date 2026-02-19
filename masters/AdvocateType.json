@@ -1,0 +1,21 @@
+{
+  "Advocate": {
+    "AdvocateType": [
+      {
+        "code": "PROSECUTOR",
+        "name": "Prosecutor",
+        "active": true
+      },
+      {
+        "code": "PUBLIC_DEFENDER",
+        "name": "Public Defender",
+        "active": true
+      },
+      {
+        "code": "PRIVATE_PRACTICE",
+        "name": "Private Practice",
+        "active": true
+      }
+    ]
+  }
+}

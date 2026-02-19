@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <mkdir dir="/home/kamal-verma/Documents/Projects/DIGIT-Backend/digit_assignment/build" />
+    <copy file="/home/kamal-verma/Documents/Projects/DIGIT-Backend/digit_assignment/target/digit_assignment.jar" tofile="/home/kamal-verma/Documents/Projects/DIGIT-Backend/digit_assignment/build/digit_assignment.jar" />
+  </target>
+</project>

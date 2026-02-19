@@ -1,0 +1,15 @@
+{
+  "tenantId": "pg",
+  "moduleName": "DataSecurity",
+  "SecurityPolicy": [
+    {
+      "model": "User",
+      "uniqueIdentifier": {
+        "name": "uuid",
+        "jsonPath": "uuid"
+      },
+      "attributes": [],
+      "roleBasedDecryptionPolicy": []
+    }
+  ]
+}

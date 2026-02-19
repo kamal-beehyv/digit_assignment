@@ -1,0 +1,85 @@
+{
+  "RequestInfo": {
+    "apiId": "advocate-registry",
+    "ver": "1.0",
+    "ts": 1513579888683,
+    "action": "",
+    "did": "1",
+    "key": "",
+    "msgId": "20170310130900|en_IN",
+    "requesterId": "",
+    "authToken": "",
+    "userInfo": {
+      "uuid": "sample-user-uuid",
+      "userName": "sample_user",
+      "roles": [{"name": "Employee", "code": "EMPLOYEE"}]
+    }
+  },
+  "BusinessServices": [
+    {
+      "tenantId": "pg",
+      "businessService": "ADVOCATE_REGISTRATION",
+      "business": "advocate-registry",
+      "businessServiceSla": 432000000,
+      "states": [
+        {
+          "sla": null,
+          "state": null,
+          "applicationStatus": null,
+          "docUploadRequired": false,
+          "isStartState": true,
+          "isTerminateState": false,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "action": "SUBMIT",
+              "nextState": "PENDING_VERIFICATION",
+              "roles": ["ADVOCATE_REGISTRAR", "CITIZEN"]
+            }
+          ]
+        },
+        {
+          "sla": 172800000,
+          "state": "PENDING_VERIFICATION",
+          "applicationStatus": "INWORKFLOW",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "action": "VERIFY",
+              "nextState": "APPROVED",
+              "roles": ["ADVOCATE_VERIFIER"]
+            },
+            {
+              "action": "REJECT",
+              "nextState": "REJECTED",
+              "roles": ["ADVOCATE_VERIFIER"]
+            }
+          ]
+        },
+        {
+          "sla": null,
+          "state": "APPROVED",
+          "applicationStatus": "ACTIVE",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": false,
+          "actions": null
+        },
+        {
+          "sla": null,
+          "state": "REJECTED",
+          "applicationStatus": "REJECTED",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": false,
+          "actions": null
+        }
+      ]
+    }
+  ]
+}

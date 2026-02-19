@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AdvocateType",
+  "description": "MDMS v2 master schema for Advocate Type",
+  "type": "object",
+  "properties": {
+    "code": { "type": "string", "description": "Master code e.g. PROSECUTOR, PUBLIC_DEFENDER" },
+    "name": { "type": "string", "description": "Display name" },
+    "active": { "type": "boolean", "default": true }
+  },
+  "required": ["code"]
+}

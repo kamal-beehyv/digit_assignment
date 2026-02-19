@@ -1,0 +1,10 @@
+{
+  "tenantId": "pg",
+  "moduleName": "DataSecurity",
+  "MaskingPatterns": [
+    {
+      "patternId": "001",
+      "pattern": ".(?=.{4})"
+    }
+  ]
+}

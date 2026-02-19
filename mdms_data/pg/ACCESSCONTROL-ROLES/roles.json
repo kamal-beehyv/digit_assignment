@@ -1,0 +1,10 @@
+{
+  "tenantId": "pg",
+  "moduleName": "ACCESSCONTROL-ROLES",
+  "roles": [
+    {"code": "CITIZEN", "name": "Citizen", "description": "Citizen who can access citizen-facing services"},
+    {"code": "EMPLOYEE", "name": "Employee", "description": "Default role for employees"},
+    {"code": "ADVOCATE_VERIFIER", "name": "Advocate Verifier", "description": "Can verify advocate applications"},
+    {"code": "ADVOCATE_REGISTRAR", "name": "Advocate Registrar", "description": "Can register advocates"}
+  ]
+}

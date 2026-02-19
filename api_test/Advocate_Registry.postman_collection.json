@@ -1,0 +1,57 @@
+{
+  "info": {
+    "name": "Advocate Registry API",
+    "description": "Create, Update, Search advocates - digit_assignment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "hostWithPort", "value": "http://localhost:8081" },
+    { "key": "tenantId", "value": "pg" },
+    { "key": "applicationNumber", "value": "" },
+    { "key": "authToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Advocate",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"RequestInfo\": {\n    \"apiId\": \"advocate-registry\",\n    \"ver\": \"1.0\",\n    \"ts\": 1513579888683,\n    \"action\": \"create\",\n    \"msgId\": \"20170310130900|en_IN\",\n    \"userInfo\": {\n      \"uuid\": \"1fec8102-0e02-4d0a-b283-cd80d5dab067\"\n    }\n  },\n  \"advocates\": [\n    {\n      \"tenantId\": \"{{tenantId}}\",\n      \"advocateType\": \"PROSECUTOR\",\n      \"barRegistrationNumber\": \"BAR-001\",\n      \"workflow\": {\n        \"action\": \"SUBMIT\"\n      }\n    }\n  ]\n}"
+        },
+        "url": "{{hostWithPort}}/advocate/v1/_create"
+      }
+    },
+    {
+      "name": "Update Advocate",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"RequestInfo\": {\n    \"apiId\": \"advocate-registry\",\n    \"ver\": \"1.0\",\n    \"ts\": 1513579888683,\n    \"action\": \"update\",\n    \"msgId\": \"20170310130900|en_IN\",\n    \"userInfo\": {\n      \"uuid\": \"1fec8102-0e02-4d0a-b283-cd80d5dab067\"\n    }\n  },\n  \"advocates\": [\n    {\n      \"tenantId\": \"{{tenantId}}\",\n      \"applicationNumber\": \"{{applicationNumber}}\",\n      \"advocateType\": \"PUBLIC_DEFENDER\",\n      \"workflow\": {\n        \"action\": \"VERIFY\"\n      }\n    }\n  ]\n}"
+        },
+        "url": "{{hostWithPort}}/advocate/v1/_update"
+      }
+    },
+    {
+      "name": "Search Advocate",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"RequestInfo\": {\n    \"apiId\": \"advocate-registry\",\n    \"ver\": \"1.0\",\n    \"ts\": 1513579888683,\n    \"action\": \"search\",\n    \"msgId\": \"20170310130900|en_IN\"\n  },\n  \"criteria\": {\n    \"tenantId\": \"{{tenantId}}\",\n    \"applicationNumber\": \"{{applicationNumber}}\"\n  }\n}"
+        },
+        "url": "{{hostWithPort}}/advocate/v1/_search"
+      }
+    }
+  ]
+}

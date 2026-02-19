@@ -1,0 +1,298 @@
+openapi: 3.0.0
+info:
+  title: Advocate Registry API
+  version: 0.1.0
+  description: API for Advocate Registration (digit_assignment)
+
+servers:
+  - url: /advocate
+    description: Advocate Registry
+
+paths:
+  /v1/_create:
+    post:
+      summary: Register a new advocate
+      operationId: advocateCreate
+      tags:
+        - Advocate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvocateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvocateResponse'
+
+  /v1/_update:
+    post:
+      summary: Update advocate
+      operationId: advocateUpdate
+      tags:
+        - Advocate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvocateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvocateResponse'
+
+  /v1/_search:
+    post:
+      summary: Search advocates
+      operationId: advocateSearch
+      tags:
+        - Advocate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvocateSearchRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvocateResponse'
+
+components:
+  schemas:
+    RequestInfo:
+      type: object
+      required:
+        - apiId
+        - ver
+        - ts
+        - action
+        - msgId
+      properties:
+        apiId:
+          type: string
+          maxLength: 128
+        ver:
+          type: string
+          maxLength: 32
+        ts:
+          type: integer
+          format: int64
+        action:
+          type: string
+          maxLength: 32
+        did:
+          type: string
+          maxLength: 1024
+        key:
+          type: string
+          maxLength: 256
+        msgId:
+          type: string
+          maxLength: 256
+        requesterId:
+          type: string
+          maxLength: 256
+        authToken:
+          type: string
+        userInfo:
+          $ref: '#/components/schemas/User'
+        correlationId:
+          type: string
+
+    User:
+      type: object
+      properties:
+        uuid:
+          type: string
+        id:
+          type: integer
+        userName:
+          type: string
+        name:
+          type: string
+        mobileNumber:
+          type: string
+        type:
+          type: string
+        roles:
+          type: array
+          items:
+            type: object
+
+    ResponseInfo:
+      type: object
+      properties:
+        apiId:
+          type: string
+        ver:
+          type: string
+        ts:
+          type: integer
+          format: int64
+        resMsgId:
+          type: string
+        msgId:
+          type: string
+        status:
+          type: string
+
+    Workflow:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+        comment:
+          type: string
+        assignes:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          maxLength: 64
+        documentType:
+          type: string
+        fileStore:
+          type: string
+        documentUid:
+          type: string
+          maxLength: 64
+        additionalDetails:
+          type: object
+
+    AuditDetails:
+      type: object
+      properties:
+        createdBy:
+          type: string
+        lastModifiedBy:
+          type: string
+        createdTime:
+          type: integer
+          format: int64
+        lastModifiedTime:
+          type: integer
+          format: int64
+
+    Advocate:
+      type: object
+      description: Advocate registration application
+      properties:
+        id:
+          type: string
+          maxLength: 64
+        tenantId:
+          type: string
+          maxLength: 128
+        applicationNumber:
+          type: string
+          maxLength: 128
+        barRegistrationNumber:
+          type: string
+          maxLength: 128
+        advocateType:
+          type: string
+          description: Code from master (e.g. PROSECUTOR, PUBLIC_DEFENDER)
+          maxLength: 64
+        organisationID:
+          type: string
+          maxLength: 64
+        individualId:
+          type: string
+          maxLength: 64
+        isActive:
+          type: boolean
+          default: true
+        workflow:
+          $ref: '#/components/schemas/Workflow'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        auditDetails:
+          $ref: '#/components/schemas/AuditDetails'
+        additionalDetails:
+          type: object
+
+    AdvocateSearchCriteria:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        barRegistrationNumber:
+          type: string
+        applicationNumber:
+          type: string
+        advocateType:
+          type: string
+
+    AdvocateRequest:
+      type: object
+      required:
+        - RequestInfo
+        - advocates
+      properties:
+        RequestInfo:
+          $ref: '#/components/schemas/RequestInfo'
+        advocates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Advocate'
+
+    AdvocateSearchRequest:
+      type: object
+      required:
+        - RequestInfo
+      properties:
+        RequestInfo:
+          $ref: '#/components/schemas/RequestInfo'
+        criteria:
+          $ref: '#/components/schemas/AdvocateSearchCriteria'
+
+    Pagination:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    AdvocateResponse:
+      type: object
+      properties:
+        responseInfo:
+          $ref: '#/components/schemas/ResponseInfo'
+        advocates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Advocate'
+        pagination:
+          $ref: '#/components/schemas/Pagination'

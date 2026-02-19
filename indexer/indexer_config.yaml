@@ -1,0 +1,23 @@
+ServiceMaps:
+  serviceName: digit-assignment
+  version: 1.0.0
+  mappings:
+    - topic: save-advocate-application
+      configKey: INDEX
+      indexes:
+        - name: advocate-index-v1
+          type: general
+          id: $.advocates.*.id
+          isBulk: true
+          timeStampField: $.advocates.*.auditDetails.createdTime
+          jsonPath: $.advocates
+
+    - topic: update-advocate-application
+      configKey: INDEX
+      indexes:
+        - name: advocate-index-v1
+          type: general
+          id: $.advocates.*.id
+          isBulk: true
+          timeStampField: $.advocates.*.auditDetails.lastModifiedTime
+          jsonPath: $.advocates

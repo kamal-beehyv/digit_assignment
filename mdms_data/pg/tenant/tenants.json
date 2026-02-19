@@ -1,0 +1,7 @@
+{
+  "tenantId": "pg",
+  "moduleName": "tenant",
+  "tenants": [
+    {"code": "pg", "city": {"code": "pg"}, "name": "Panaji"}
+  ]
+}
